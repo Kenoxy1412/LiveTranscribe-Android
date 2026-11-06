@@ -3,19 +3,19 @@ package com.charles.livecaptionn.settings
 import com.charles.livecaptionn.BuildConfig
 
 data class CaptionSettings(
-    val sourceLanguageCode: String = "en",
-    val targetLanguageCode: String = "vi",
+    val sourceLanguageCode: String = "ja",
+    val targetLanguageCode: String = "th",
     val autoDetectSource: Boolean = false,
     val textSizeSp: Float = 20f,
     val overlayOpacity: Float = 0.65f,
-    val showOriginal: Boolean = true,
+    val showOriginal: Boolean = false,
     val serverBaseUrl: String = DEFAULT_BASE_URL,
     val overlayX: Int = 60,
     val overlayY: Int = 220,
     val overlayMinimized: Boolean = false,
     val audioSource: AudioSource = AudioSource.MIC,
     val sttBackend: SttBackend = SttBackend.LOCAL_VOSK,
-    val translationBackend: TranslationBackend = TranslationBackend.ML_KIT,
+    val translationBackend: TranslationBackend = TranslationBackend.OPENAI_API,
     val sttBaseUrl: String = DEFAULT_STT_URL,
     val overlayWidthDp: Int = DEFAULT_OVERLAY_WIDTH_DP,
     val overlayHeightDp: Int = DEFAULT_OVERLAY_HEIGHT_DP,
