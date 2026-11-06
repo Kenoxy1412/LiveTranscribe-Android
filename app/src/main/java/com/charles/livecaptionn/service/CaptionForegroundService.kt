@@ -425,7 +425,18 @@ class CaptionForegroundService : Service() {
             targetCode = captionSettings.targetLanguageCode,
             autoDetect = currentAudioSource == AudioSource.SYSTEM || captionSettings.autoDetectSource
         )
-        if (translated.isBlank()) return
+        if (translated.isBlank()) {
+            Log.e(
+                "CaptionService",
+                "Translation returned empty text. backend=${captionSettings.translationBackend}, " +
+                    "source=${captionSettings.sourceLanguageCode}, target=${captionSettings.targetLanguageCode}. " +
+                    "Check network/model download and ML Kit logs."
+            )
+            app.container.runtimeStore.update {
+                it.copy(lastError = "Translation failed for ${captionSettings.sourceLanguageCode} → ${captionSettings.targetLanguageCode}. Check internet and retry; the translation model may not have downloaded.")
+            }
+            return
+        }
         val translatedWithGlossary = applyGlossary(translated, app.container.glossary.list())
         app.container.runtimeStore.update {
             val current = it.transcriptLines.any { line -> line.id == request.lineId }
