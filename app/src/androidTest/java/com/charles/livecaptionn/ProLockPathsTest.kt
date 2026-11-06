@@ -35,7 +35,7 @@ class ProLockPathsTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun lockedTranslationLanguage_opensUpgradePrompt_notThePick() {
+    fun previouslyLockedTranslationLanguage_canBePickedWithoutUpgrade() {
         var upgradeAsked = 0
         var picked: Language? = null
         val indonesian = Language("id", "Indonesian")
@@ -51,10 +51,10 @@ class ProLockPathsTest {
                 )
             }
         }
-        assertTrue("Indonesian must stay a Pro translation language", MlKitLanguages.requiresPro("id"))
+        assertTrue("Indonesian is now in the free translation tier", !MlKitLanguages.requiresPro("id"))
         composeTestRule.onNodeWithText("Indonesian").performClick()
-        assertEquals(1, upgradeAsked)
-        assertEquals(null, picked)
+        assertEquals(0, upgradeAsked)
+        assertEquals(indonesian, picked)
     }
 
     @Test
