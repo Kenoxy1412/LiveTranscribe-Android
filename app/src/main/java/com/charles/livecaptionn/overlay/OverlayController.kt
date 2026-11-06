@@ -346,13 +346,13 @@ class OverlayController(
         if (clickThroughHandle != null) return
         val handle = TextView(context).apply {
             text = "↔"
-            textSize = 18f
+            textSize = 13f
             gravity = Gravity.CENTER
             setTextColor(Color.WHITE)
             background = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
-                setColor(Color.parseColor("#CC5E35B1"))
-                setStroke(dp(1), Color.WHITE)
+                setColor(Color.parseColor("#88707070"))
+                setStroke(dp(1), Color.parseColor("#66FFFFFF"))
             }
             contentDescription = "Hold for 2 seconds to toggle click-through"
             isClickable = true
@@ -365,13 +365,13 @@ class OverlayController(
             WindowManager.LayoutParams.TYPE_PHONE
         }
         val hp = WindowManager.LayoutParams(
-            dp(42), dp(42), type,
+            dp(30), dp(30), type,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = (initialX + dp(8)).coerceAtLeast(0)
-            y = (initialY - dp(48)).coerceAtLeast(dp(8))
+            x = (initialX + dp(6)).coerceAtLeast(0)
+            y = (initialY - dp(36)).coerceAtLeast(dp(8))
         }
         val toggle = Runnable {
             longPressTriggered = true
