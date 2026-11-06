@@ -40,10 +40,13 @@ export default {
     if (!/^[a-zA-Z-]{2,12}$/.test(source) || !/^[a-zA-Z-]{2,12}$/.test(target)) {
       return new Response(JSON.stringify({ error: "Invalid language code" }), { status: 400, headers: cors });
     }
-    const prompt = "Translate the user's speech transcript into " + target +
-      ". Source language: " + source + ". Return only the translation, with no quotes, labels, explanations, or alternatives. " +
-      "Preserve meaning, names, numbers, tone, and sentence context. Use natural conversational language. " +
-      "If the input is already in the target language, return it unchanged.";
+    const prompt = "Translate the user's speech transcript from " + source + " into " + target + ". " +
+      "Return only the translation, with no quotes, labels, explanations, or alternatives. " +
+      "Preserve the exact meaning, intent, names, numbers, speaker tone, and context. Do not summarize, omit, soften, censor, or add details. " +
+      "For Thai output, use fluent, natural spoken Thai suitable for subtitles and dubbing, not stiff word-for-word Thai. " +
+      "Keep the original register: if the source is casual, use casual Thai; if it is formal, use formal Thai. " +
+      "For consensual adult-oriented dialogue between adults, translate the original wording and level of explicitness faithfully using natural Thai adult vocabulary; do not make it more graphic than the source. " +
+      "Never infer or introduce sexual content that is not present in the source. If the input is already in the target language, return it unchanged.";
     const upstream = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
