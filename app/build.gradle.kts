@@ -1,3 +1,4 @@
+import java.net.URL
 import java.util.Properties
 
 plugins {
@@ -57,7 +58,7 @@ val downloadSherpaAar by tasks.registering {
         if (!target.exists() || target.length() < 1_000_000L) {
             target.parentFile.mkdirs()
             val temp = File(target.parentFile, target.name + ".download")
-            val connection = java.net.URL("https://github.com/k2-fsa/sherpa-onnx/releases/download/v2.0.1/sherpa-onnx-2.0.1.aar").openConnection().apply {
+            val connection = URL("https://github.com/k2-fsa/sherpa-onnx/releases/download/v2.0.1/sherpa-onnx-2.0.1.aar").openConnection().apply {
                 connectTimeout = 30_000
                 readTimeout = 120_000
             }
