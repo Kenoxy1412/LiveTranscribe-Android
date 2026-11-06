@@ -22,5 +22,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy worker.js --name livecaptionn-translate --compatibility-date 2026-11-07
+          command: deploy worker.js --name livecaptionn-translate --compatibility-date 2026-11-06
           workingDirectory: cloudflare-worker-translate
