@@ -257,12 +257,7 @@ fun MainScreen(
             // A Pro-only ML Kit language can stay selected after Pro lapses (or after a
             // restore). Starting then used to fail inside the service with the reason
             // hidden, so the Start button looked dead. Open the upgrade flow instead.
-            val startNeedsPro = com.charles.livecaptionn.translation.ProStartGate.requiresPro(
-                backend = ui.settings.translationBackend,
-                sourceLanguageCode = ui.settings.sourceLanguageCode,
-                targetLanguageCode = ui.settings.targetLanguageCode,
-                hasPro = premiumState.premium.hasPro
-            )
+            val startNeedsPro = false
             CaptionControlCard(
                 ui,
                 onStart = { if (startNeedsPro) showUpgradePrompt = true else onStart() },
@@ -283,7 +278,7 @@ fun MainScreen(
                 ui = ui,
                 viewModel = viewModel,
                 onManageModels = { showVoskSheet = true },
-                hasPro = premiumState.premium.hasPro,
+                hasPro = true,
                 onRequiresPro = { showUpgradePrompt = true }
             )
             OverlaySettingsCard(
@@ -312,14 +307,6 @@ fun MainScreen(
                 translatedCount = ui.uiLocalizationTranslated,
                 translatedTotal = ui.uiLocalizationTotal,
                 onSelect = viewModel::updateUiLanguage
-            )
-            PremiumCard(
-                state = premiumState,
-                onPurchase = { product -> activity?.let { premiumVm.purchase(it, product) } },
-                onManageSubscription = { activity?.let { premiumVm.manageSubscription(it) } },
-                onRestoreEmailChange = { premiumVm.updateRestoreEmail(it) },
-                onRestore = { premiumVm.restore() },
-                onRefresh = { premiumVm.refresh() }
             )
             if (AdUnits.ENABLED && AdUnits.NATIVE.isNotBlank() && !premiumState.premium.hasAdFree) {
                 NativeAdCard()
@@ -1159,7 +1146,7 @@ private fun VoskModelSheet(
             }
 
             if (availableLarge.isNotEmpty()) {
-                Text(t["Large · server-grade accuracy (Pro)"], style = MaterialTheme.typography.labelLarge)
+                Text(t["Large · server-grade accuracy"], style = MaterialTheme.typography.labelLarge)
                 Text(
                     text = t["Full Vosk server models with the lowest error rates. Each one is 80 MB to 2 GB but runs entirely on-device after the one-time download. This is the strongest transcription option for every language."],
                     style = MaterialTheme.typography.labelSmall,
@@ -1170,7 +1157,7 @@ private fun VoskModelSheet(
                         model = model,
                         progress = progress[model.modelName],
                         error = errors[model.modelName],
-                        locked = !hasPro,
+                        locked = false,
                         onDownload = { onDownload(model) },
                         onDelete = { onDelete(model) },
                         onRequiresPro = onRequiresPro
@@ -1356,7 +1343,7 @@ private fun OverlaySettingsCard(
                 )
             }
 
-            Text(t["Overlay theme (Pro)"], style = MaterialTheme.typography.bodyMedium)
+            Text(t["Overlay theme"], style = MaterialTheme.typography.bodyMedium)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1364,7 +1351,7 @@ private fun OverlaySettingsCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OverlayThemeCatalog.THEMES.forEach { theme ->
-                    val locked = !hasPro && theme.id != OverlayThemeCatalog.FREE_THEME_ID
+                    val locked = false
                     ChoiceChip(
                         label = theme.label,
                         icon = if (locked) Icons.Filled.Lock else Icons.Filled.Palette,
@@ -1374,7 +1361,7 @@ private fun OverlaySettingsCard(
                 }
             }
 
-            Text(t["Overlay font (Pro)"], style = MaterialTheme.typography.bodyMedium)
+            Text(t["Overlay font"], style = MaterialTheme.typography.bodyMedium)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1382,7 +1369,7 @@ private fun OverlaySettingsCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OverlayFontCatalog.FONTS.forEach { font ->
-                    val locked = !hasPro && font.id != OverlayFontCatalog.FREE_FONT_ID
+                    val locked = false
                     ChoiceChip(
                         label = font.label,
                         icon = if (locked) Icons.Filled.Lock else Icons.Filled.TextFields,
