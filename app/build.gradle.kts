@@ -48,6 +48,28 @@ val appVersionCode: Int = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?
 val appVersionName: String = System.getenv("ANDROID_VERSION_NAME")
     ?: "1.0.$appVersionCode"
 
+// sherpa-onnx Android runtime (official AAR), fetched at build time.
+val sherpaAar = layout.buildDirectory.file("sherpa/sherpa-onnx-2.0.1.aar")
+val downloadSherpaAar by tasks.registering {
+    outputs.file(sherpaAar)
+    doLast {
+        val target = sherpaAar.get().asFile
+        if (!target.exists() || target.length() < 1_000_000L) {
+            target.parentFile.mkdirs()
+            val temp = File(target.parentFile, target.name + ".download")
+            val connection = java.net.URL("https://github.com/k2-fsa/sherpa-onnx/releases/download/v2.0.1/sherpa-onnx-2.0.1.aar").openConnection().apply {
+                connectTimeout = 30_000
+                readTimeout = 120_000
+            }
+            connection.getInputStream().use { input -> temp.outputStream().use { output -> input.copyTo(output) } }
+            require(temp.length() > 1_000_000L) { "Downloaded sherpa-onnx AAR is unexpectedly small" }
+            if (target.exists()) target.delete()
+            check(temp.renameTo(target)) { "Could not install sherpa-onnx AAR" }
+        }
+    }
+}
+tasks.named("preBuild").configure { dependsOn(downloadSherpaAar) }
+
 android {
     namespace = "com.charles.livecaptionn"
     compileSdk = 36
@@ -215,6 +237,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
     implementation("com.alphacephei:vosk-android:0.3.75")
+    implementation(files(sherpaAar))
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // On-device translation (Google Translate models cached offline).
