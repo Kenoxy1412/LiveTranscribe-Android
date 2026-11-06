@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.text.TextUtils
 import android.view.Gravity
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -47,6 +48,9 @@ class OverlayController(
     private var pauseButton: ImageButton? = null
     private var minButton: ImageButton? = null
     private var closeButton: ImageButton? = null
+    private var controlsHeader: View? = null
+    private var resizeHandleView: View? = null
+    private var controlsHidden = false
     private var params: WindowManager.LayoutParams? = null
 
     fun show(initialX: Int, initialY: Int, widthDp: Int, heightDp: Int) {
@@ -120,6 +124,7 @@ class OverlayController(
         header.addView(pauseButton)
         header.addView(minButton)
         header.addView(closeButton)
+        controlsHeader = header
 
         // Original speech section (shown when transcribing + translating with showOriginal)
         val origContainer = LinearLayout(context).apply {
@@ -212,6 +217,24 @@ class OverlayController(
             setOnTouchListener(ResizeTouchListener())
         }
         frame.addView(resizeHandle)
+        resizeHandleView = resizeHandle
+
+        // Double-tap the caption area to hide/show the floating controls.
+        // Returning false preserves normal scrolling and text interaction.
+        val controlsGesture = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean = true
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                setControlsHidden(!controlsHidden)
+                return true
+            }
+        })
+        val toggleControlsOnDoubleTap = View.OnTouchListener { _, event ->
+            controlsGesture.onTouchEvent(event)
+            false
+        }
+        body?.setOnTouchListener(toggleControlsOnDoubleTap)
+        translatedText?.setOnTouchListener(toggleControlsOnDoubleTap)
+        originalText?.setOnTouchListener(toggleControlsOnDoubleTap)
 
         root = frame
         try {
@@ -304,6 +327,15 @@ class OverlayController(
         pauseButton = null
         minButton = null
         closeButton = null
+        controlsHeader = null
+        resizeHandleView = null
+        controlsHidden = false
+    }
+
+    private fun setControlsHidden(hidden: Boolean) {
+        controlsHidden = hidden
+        controlsHeader?.visibility = if (hidden) View.GONE else View.VISIBLE
+        resizeHandleView?.visibility = if (hidden) View.GONE else View.VISIBLE
     }
 
     // ── Helpers ──
