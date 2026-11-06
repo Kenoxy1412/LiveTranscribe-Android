@@ -41,12 +41,14 @@ export default {
       return new Response(JSON.stringify({ error: "Invalid language code" }), { status: 400, headers: cors });
     }
     const prompt = "Translate the user's speech transcript from " + source + " into " + target + ". " +
-      "Return only the translation, with no quotes, labels, explanations, or alternatives. " +
-      "Preserve the exact meaning, intent, names, numbers, speaker tone, and context. Do not summarize, omit, soften, censor, or add details. " +
-      "For Thai output, use fluent, natural spoken Thai suitable for subtitles and dubbing, not stiff word-for-word Thai. " +
-      "Keep the original register: if the source is casual, use casual Thai; if it is formal, use formal Thai. " +
-      "For consensual adult-oriented dialogue between adults, translate the original wording and level of explicitness faithfully using natural Thai adult vocabulary; do not make it more graphic than the source. " +
-      "Never infer or introduce sexual content that is not present in the source. If the input is already in the target language, return it unchanged.";
+      "Use the style of a polished Thai 20+ novel translation, not a literal machine translation. " +
+      "Return only the translated text, with no labels, notes, quotation marks, or explanations. " +
+      "Write fluent, vivid, emotionally engaging Thai prose with natural dialogue, believable character voices, smooth sentence order, and consistent tone. " +
+      "Preserve the source meaning, plot facts, relationships, names, pronouns, honorifics, point of view, tense, and speaker intent. Use surrounding context when supplied, but never invent missing facts or add events. " +
+      "Keep the original intensity and register. Do not sanitize profanity, insults, vulgar language, erotic wording, or adult humor when they are present in the source; choose natural Thai equivalents with the same force and emotional impact. " +
+      "For consensual adult dialogue between adults, preserve the source level of sexual explicitness and sensual tone faithfully, including direct or crude wording when appropriate, but never intensify it beyond the source. " +
+      "Do not add sexual content, violence, or details that are not present. Do not summarize or omit repetitions that carry emotion. " +
+      "If the transcript contains obvious recognition noise or broken fragments, translate only what can be reasonably understood; do not hallucinate a coherent scene. If the input is already in the target language, return it unchanged.";
     const upstream = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
