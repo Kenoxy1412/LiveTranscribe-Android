@@ -80,9 +80,10 @@ object MlKitLanguages {
      * (matches this app's existing trust model elsewhere); [LIST] itself and
      * the underlying ML Kit repository stay fully ungated.
      */
-    val FREE_TIER: Set<String> = setOf(
-        "en", "es", "fr", "de", "it", "pt", "nl", "ru", "zh", "ja", "ko", "ar", "hi", "vi", "tr"
-    )
+    // Kenoxy build: make every language supported by ML Kit available without Pro.
+    // This removes the language paywall only; other Pro features (for example
+    // large Vosk speech models and overlay themes) keep their existing rules.
+    val FREE_TIER: Set<String> = LIST.map { it.code.lowercase() }.toSet()
 
     fun requiresPro(code: String): Boolean = code.trim().lowercase() !in FREE_TIER
 }
