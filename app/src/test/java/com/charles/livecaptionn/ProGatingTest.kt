@@ -13,9 +13,9 @@ import org.junit.Test
 class ProGatingTest {
 
     @Test
-    fun indonesianTranslation_requiresPro() {
-        assertTrue(MlKitLanguages.requiresPro("id"))
-        assertTrue(MlKitLanguages.requiresPro("ID"))
+    fun indonesianTranslation_isFree() {
+        assertFalse(MlKitLanguages.requiresPro("id"))
+        assertFalse(MlKitLanguages.requiresPro("ID"))
     }
 
     @Test
@@ -54,10 +54,9 @@ class ProGatingTest {
     }
 
     @Test
-    fun startWithProLanguage_withoutPro_needsPro() {
-        // The Start button opens the upgrade flow in this case instead of failing silently.
-        assertTrue(ProStartGate.requiresPro(TranslationBackend.ML_KIT, "en", "id", hasPro = false))
-        assertTrue(ProStartGate.requiresPro(TranslationBackend.ML_KIT, "id", "en", hasPro = false))
+    fun startWithPreviouslyLockedLanguage_withoutPro_starts() {
+        assertFalse(ProStartGate.requiresPro(TranslationBackend.ML_KIT, "en", "id", hasPro = false))
+        assertFalse(ProStartGate.requiresPro(TranslationBackend.ML_KIT, "id", "en", hasPro = false))
     }
 
     @Test
