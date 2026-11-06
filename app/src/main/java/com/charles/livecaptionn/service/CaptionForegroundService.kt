@@ -199,6 +199,10 @@ class CaptionForegroundService : Service() {
                 failAndStop("This ML Kit language requires Pro. Choose a free language or upgrade.")
                 return@launch
             }
+            if (settings.sttBackend == SttBackend.LOCAL_SHERPA && currentAudioSource != AudioSource.SYSTEM) {
+                failAndStop("sherpa-onnx requires System Audio Capture. Select System Audio to capture MX Player playback.")
+                return@launch
+            }
             if (settings.sttBackend == SttBackend.LOCAL_VOSK) {
                 val model = app.container.voskRegistry.installedModelFor(sttLanguageCode)
                 if (model == null) {
@@ -328,6 +332,7 @@ class CaptionForegroundService : Service() {
                             sourceLanguageCode = sttLanguageCode,
                             sttBackend = settings.sttBackend,
                             localSttClient = app.container.localVoskClient,
+                            sherpaSttClient = app.container.sherpaSttClient,
                             scope = serviceScope,
                             onResult = onSpeechResult,
                             onSttError = errorSink
