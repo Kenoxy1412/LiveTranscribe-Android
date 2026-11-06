@@ -236,11 +236,18 @@ class CaptionForegroundService : Service() {
                             val final = pendingFinalTranslations.poll() ?: break
                             translateSnapshot(final)
                         }
-                        val partial = synchronized(this@CaptionForegroundService) {
-                            TranslationRequest(bufferedText, bufferedLineId, historyOnNextTranslate)
-                                .also { historyOnNextTranslate = false }
+                        // ML Kit is a compact on-device model and often mistranslates
+                        // incomplete Vosk hypotheses. For this backend, translate only
+                        // finalized utterances; server translators may still translate
+                        // partial hypotheses for lower-latency captions.
+                        val backend = app.container.settingsRepository.settingsFlow.first().translationBackend
+                        if (backend != com.charles.livecaptionn.settings.TranslationBackend.ML_KIT) {
+                            val partial = synchronized(this@CaptionForegroundService) {
+                                TranslationRequest(bufferedText, bufferedLineId, historyOnNextTranslate)
+                                    .also { historyOnNextTranslate = false }
+                            }
+                            if (partial.text.isNotBlank()) translateSnapshot(partial)
                         }
-                        if (partial.text.isNotBlank()) translateSnapshot(partial)
                     }
             }
 
