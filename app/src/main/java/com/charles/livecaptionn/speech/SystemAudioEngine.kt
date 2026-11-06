@@ -58,7 +58,11 @@ class SystemAudioEngine(
             scope.launch(Dispatchers.IO) {
                 try {
                     statusMutable.value = RecognitionStatus.PROCESSING
+                    if (!sherpaSttClient.isModelInstalled()) {
+                        onSttError("Downloading sherpa-onnx SenseVoice model (about 239 MB). This is a one-time download.")
+                    }
                     sherpaSttClient.prepare(sourceLanguageCode)
+                    onSttError(null)
                     if (running) startCapture()
                 } catch (t: Throwable) {
                     Log.e("SystemAudioEngine", "sherpa-onnx initialization failed", t)
