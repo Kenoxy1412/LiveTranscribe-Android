@@ -1327,7 +1327,7 @@ private fun OverlaySettingsCard(
             Text(t.format("Opacity: %d%%", (ui.settings.overlayOpacity * 100).toInt()), style = MaterialTheme.typography.bodyMedium)
             Slider(
                 value = ui.settings.overlayOpacity,
-                valueRange = 0.2f..1f,
+                valueRange = 0f..1f,
                 onValueChange = viewModel::updateOpacity
             )
 
