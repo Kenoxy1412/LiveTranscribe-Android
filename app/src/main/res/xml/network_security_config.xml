@@ -5,6 +5,8 @@
          or be accessed via localhost port-forwarding. -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
+        <!-- User-configured local LibreTranslate / Whisper server on the LAN. -->
+        <domain>192.168.141.12</domain>
     </domain-config>
     <!-- All other traffic requires TLS. -->
     <base-config cleartextTrafficPermitted="false" />
