@@ -716,6 +716,13 @@ private fun AudioSourceCard(
                     onClick = { viewModel.updateSttBackend(SttBackend.LOCAL_VOSK) },
                     modifier = Modifier.weight(1f)
                 )
+                ChoiceChip(
+                    label = "sherpa-onnx",
+                    icon = Icons.Filled.Memory,
+                    selected = ui.settings.sttBackend == SttBackend.LOCAL_SHERPA,
+                    onClick = { viewModel.updateSttBackend(SttBackend.LOCAL_SHERPA) },
+                    modifier = Modifier.weight(1f)
+                )
             }
             if (ui.settings.sttBackend == SttBackend.LOCAL_VOSK) {
                 val installed = ui.voskModels.count { it.installed }
@@ -742,6 +749,12 @@ private fun AudioSourceCard(
                     Spacer(Modifier.width(6.dp))
                     Text(t["Manage on-device models"])
                 }
+            } else if (ui.settings.sttBackend == SttBackend.LOCAL_SHERPA) {
+                Text(
+                    text = "Offline SenseVoice recognition for Japanese, Chinese, Korean, English and Cantonese. First use downloads the approximately 239 MB model once; recognition then runs locally. Requires System Audio Capture.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             } else {
                 Text(
                     text = if (isSystem)
