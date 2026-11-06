@@ -260,8 +260,8 @@ class OverlayController(
         val theme = OverlayThemeCatalog.find(ui.themeId)
         val font = OverlayFontCatalog.find(ui.fontId)
         val s = uiStrings()
-        // Enforce minimum 0.5 opacity for WCAG AA contrast (text on dark bg)
-        val effectiveOpacity = ui.opacity.coerceIn(0.5f, 1.0f)
+        // Allow a fully transparent caption background (0.0) while keeping text visible.
+        val effectiveOpacity = ui.opacity.coerceIn(0.0f, 1.0f)
         (container.background as? GradientDrawable)?.setColor(
             Color.argb((effectiveOpacity * 255).roundToInt(), Color.red(theme.backgroundRgb), Color.green(theme.backgroundRgb), Color.blue(theme.backgroundRgb))
         )
