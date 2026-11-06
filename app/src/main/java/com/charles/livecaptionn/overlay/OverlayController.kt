@@ -6,6 +6,8 @@ import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.GestureDetector
@@ -51,6 +53,11 @@ class OverlayController(
     private var controlsHeader: View? = null
     private var resizeHandleView: View? = null
     private var controlsHidden = false
+    private var clickThroughEnabled = false
+    private var clickThroughHandle: TextView? = null
+    private var clickThroughParams: WindowManager.LayoutParams? = null
+    private val touchHandler = Handler(Looper.getMainLooper())
+    private var longPressTriggered = false
     private var params: WindowManager.LayoutParams? = null
 
     fun show(initialX: Int, initialY: Int, widthDp: Int, heightDp: Int) {
@@ -239,6 +246,7 @@ class OverlayController(
         root = frame
         try {
             wm.addView(frame, p)
+            addClickThroughHandle(initialX, initialY)
         } catch (t: Throwable) {
             root = null
             params = null
@@ -330,6 +338,94 @@ class OverlayController(
         controlsHeader = null
         resizeHandleView = null
         controlsHidden = false
+        removeClickThroughHandle()
+        clickThroughEnabled = false
+    }
+
+    private fun addClickThroughHandle(initialX: Int, initialY: Int) {
+        if (clickThroughHandle != null) return
+        val handle = TextView(context).apply {
+            text = "↔"
+            textSize = 18f
+            gravity = Gravity.CENTER
+            setTextColor(Color.WHITE)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(Color.parseColor("#CC5E35B1"))
+                setStroke(dp(1), Color.WHITE)
+            }
+            contentDescription = "Hold for 2 seconds to toggle click-through"
+            isClickable = true
+            isLongClickable = true
+        }
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else {
+            @Suppress("DEPRECATION")
+            WindowManager.LayoutParams.TYPE_PHONE
+        }
+        val hp = WindowManager.LayoutParams(
+            dp(42), dp(42), type,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = (initialX + dp(8)).coerceAtLeast(0)
+            y = (initialY - dp(48)).coerceAtLeast(dp(8))
+        }
+        val toggle = Runnable {
+            longPressTriggered = true
+            setClickThroughEnabled(!clickThroughEnabled)
+        }
+        handle.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    longPressTriggered = false
+                    touchHandler.postDelayed(toggle, 2000L)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    touchHandler.removeCallbacks(toggle)
+                    true
+                }
+                else -> true
+            }
+        }
+        try {
+            wm.addView(handle, hp)
+            clickThroughHandle = handle
+            clickThroughParams = hp
+        } catch (_: Throwable) {
+            clickThroughHandle = null
+            clickThroughParams = null
+        }
+    }
+
+    private fun setClickThroughEnabled(enabled: Boolean) {
+        val lp = params ?: return
+        val view = root ?: return
+        clickThroughEnabled = enabled
+        lp.flags = if (enabled) {
+            lp.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        } else {
+            lp.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        }
+        try {
+            wm.updateViewLayout(view, lp)
+            clickThroughHandle?.text = if (enabled) "↗" else "↔"
+            clickThroughHandle?.contentDescription =
+                if (enabled) "Click-through on. Hold for 2 seconds to turn off"
+                else "Click-through off. Hold for 2 seconds to turn on"
+        } catch (_: Throwable) { }
+    }
+
+    private fun removeClickThroughHandle() {
+        touchHandler.removeCallbacksAndMessages(null)
+        clickThroughHandle?.let {
+            try { wm.removeViewImmediate(it) } catch (_: Throwable) { }
+        }
+        clickThroughHandle = null
+        clickThroughParams = null
     }
 
     private fun setControlsHidden(hidden: Boolean) {
