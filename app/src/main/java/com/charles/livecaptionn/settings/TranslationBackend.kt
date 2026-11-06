@@ -10,7 +10,8 @@ package com.charles.livecaptionn.settings
  */
 enum class TranslationBackend {
     ML_KIT,
-    LIBRE_TRANSLATE,\n    OPENAI_API;
+    LIBRE_TRANSLATE,
+    OPENAI_API;
 
     companion object {
         fun fromName(name: String?): TranslationBackend =
