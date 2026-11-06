@@ -17,8 +17,9 @@ jobs:
 
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy worker.js --name livecaptionn-translate --compatibility-date 2026-11-07
           workingDirectory: cloudflare-worker-translate
