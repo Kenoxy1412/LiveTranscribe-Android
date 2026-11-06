@@ -40,7 +40,8 @@ class AppContainer(context: Context) {
     val translationRepository: TranslationRepository = RoutingTranslationRepository(
         settingsRepository = settingsRepository,
         mlKit = mlKitTranslationRepository,
-        libre = libreTranslationRepository
+        libre = libreTranslationRepository,
+        openAi = openAiTranslationRepository
     )
     val mockTranslationRepository: TranslationRepository = MockTranslationRepository()
     val transcriptHistory: TranscriptHistoryStore = TranscriptHistoryStore(context.applicationContext)
