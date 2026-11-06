@@ -241,7 +241,7 @@ class CaptionForegroundService : Service() {
                         // finalized utterances; server translators may still translate
                         // partial hypotheses for lower-latency captions.
                         val backend = app.container.settingsRepository.settingsFlow.first().translationBackend
-                        if (backend != com.charles.livecaptionn.settings.TranslationBackend.ML_KIT) {
+                        if (backend == com.charles.livecaptionn.settings.TranslationBackend.LIBRE_TRANSLATE) {
                             val partial = synchronized(this@CaptionForegroundService) {
                                 TranslationRequest(bufferedText, bufferedLineId, historyOnNextTranslate)
                                     .also { historyOnNextTranslate = false }
