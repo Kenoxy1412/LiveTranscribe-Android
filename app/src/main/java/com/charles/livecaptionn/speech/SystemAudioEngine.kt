@@ -33,6 +33,7 @@ class SystemAudioEngine(
     private val sourceLanguageCode: String,
     private val sttBackend: SttBackend,
     private val localSttClient: LocalVoskSttClient,
+    private val sherpaSttClient: SherpaSenseVoiceSttClient,
     private val scope: CoroutineScope,
     private val onResult: (SpeechResult) -> Unit,
     /** Null clears any STT error hint after a successful round-trip to the server. */
@@ -53,7 +54,22 @@ class SystemAudioEngine(
         if (running) return
         running = true
         paused = false
-        startCapture()
+        if (sttBackend == SttBackend.LOCAL_SHERPA) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    statusMutable.value = RecognitionStatus.PROCESSING
+                    sherpaSttClient.prepare(sourceLanguageCode)
+                    if (running) startCapture()
+                } catch (t: Throwable) {
+                    Log.e("SystemAudioEngine", "sherpa-onnx initialization failed", t)
+                    onSttError("sherpa-onnx initialization failed: ${t.message ?: t::class.java.simpleName}")
+                    statusMutable.value = RecognitionStatus.ERROR
+                    running = false
+                }
+            }
+        } else {
+            startCapture()
+        }
     }
 
     override fun stop() {
@@ -146,6 +162,7 @@ class SystemAudioEngine(
         captureJob = scope.launch(Dispatchers.Default) {
             val chunkSeconds = when (sttBackend) {
                 SttBackend.LOCAL_VOSK -> LOCAL_CHUNK_SECONDS
+                SttBackend.LOCAL_SHERPA -> SHERPA_CHUNK_SECONDS
                 SttBackend.REMOTE_WHISPER -> REMOTE_CHUNK_SECONDS
             }
             val chunkBytes = SAMPLE_RATE * 2 * chunkSeconds // 16-bit mono = 2 bytes/sample
@@ -207,6 +224,13 @@ class SystemAudioEngine(
                     SttBackend.LOCAL_VOSK -> {
                         localSttClient.transcribe(pcmData, SAMPLE_RATE, sourceLanguageCode)
                     }
+                    SttBackend.LOCAL_SHERPA -> {
+                        runCatching { sherpaSttClient.transcribe(pcmData) }
+                            .fold(
+                                onSuccess = { TranscribeOutcome(it) },
+                                onFailure = { TranscribeOutcome("", "sherpa-onnx transcription failed: ${it.message ?: it::class.java.simpleName}") }
+                            )
+                    }
                 }
                 val err = outcome.errorMessage
                 if (err != null) {
@@ -238,6 +262,7 @@ class SystemAudioEngine(
         private const val SAMPLE_RATE = 16000
         private const val REMOTE_CHUNK_SECONDS = 6
         private const val LOCAL_CHUNK_SECONDS = 2
+        private const val SHERPA_CHUNK_SECONDS = 5
         private const val SILENCE_AVERAGE_ABS_THRESHOLD = 120
         private const val SILENT_CHUNKS_BEFORE_HINT = 2
         private const val NO_CAPTURABLE_AUDIO_MESSAGE =
