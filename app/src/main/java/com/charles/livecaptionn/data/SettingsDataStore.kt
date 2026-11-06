@@ -11,12 +11,31 @@ import com.charles.livecaptionn.settings.AudioSource
 import com.charles.livecaptionn.settings.CaptionSettings
 import com.charles.livecaptionn.settings.SttBackend
 import com.charles.livecaptionn.settings.TranslationBackend
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "caption_settings")
 
 class SettingsDataStore(private val context: Context) : SettingsRepository {
+
+    init {
+        // Apply the requested OpenAI 20+ Thai novel profile once to existing installs.
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            context.dataStore.edit { p ->
+                if (p[TRANSLATION_PROFILE_V1] != true) {
+                    p[TRANSLATION_BACKEND] = TranslationBackend.OPENAI_API.name
+                    p[SHOW_ORIGINAL] = false
+                    p[TARGET] = "th"
+                    if (p[SOURCE] !in setOf("ja", "zh")) p[SOURCE] = "ja"
+                    p[TRANSLATION_PROFILE_V1] = true
+                }
+            }
+        }
+    }
 
     override val settingsFlow: Flow<CaptionSettings> = context.dataStore.data.map { p -> p.toCaptionSettings() }
 
@@ -62,7 +81,7 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
             autoDetectSource = this[AUTO_DETECT] ?: false,
             textSizeSp = this[TEXT_SIZE] ?: 20f,
             overlayOpacity = this[OPACITY] ?: 0.65f,
-            showOriginal = this[SHOW_ORIGINAL] ?: true,
+            showOriginal = this[SHOW_ORIGINAL] ?: defaults.showOriginal,
             serverBaseUrl = this[BASE_URL] ?: CaptionSettings.DEFAULT_BASE_URL,
             overlayX = this[OVERLAY_X] ?: 60,
             overlayY = this[OVERLAY_Y] ?: 220,
@@ -97,6 +116,7 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
         val AUDIO_SOURCE = stringPreferencesKey("audio_source")
         val STT_BACKEND = stringPreferencesKey("stt_backend")
         val TRANSLATION_BACKEND = stringPreferencesKey("translation_backend")
+        val TRANSLATION_PROFILE_V1 = booleanPreferencesKey("translation_profile_openai_novel_v1")
         val STT_URL = stringPreferencesKey("stt_url")
         val OVERLAY_W = intPreferencesKey("overlay_w")
         val OVERLAY_H = intPreferencesKey("overlay_h")
