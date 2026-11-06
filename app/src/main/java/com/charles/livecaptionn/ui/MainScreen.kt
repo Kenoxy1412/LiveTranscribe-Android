@@ -1427,9 +1427,23 @@ private fun ServerCard(
                 )
             }
 
+            ChoiceChip(
+                label = "OpenAI (fast + low cost)",
+                icon = Icons.Filled.Cloud,
+                selected = ui.settings.translationBackend == TranslationBackend.OPENAI_API,
+                onClick = { onSelectTranslationBackend(TranslationBackend.OPENAI_API) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             if (ui.settings.translationBackend == TranslationBackend.ML_KIT) {
                 Text(
                     text = t["Google ML Kit translates fully on this device — no server required. The first time you use a language pair, a ~30 MB model downloads and is then cached offline forever."],
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else if (ui.settings.translationBackend == TranslationBackend.OPENAI_API) {
+                Text(
+                    text = "OpenAI translates finalized speech through your private Cloudflare Worker. API key stays on the server. Internet required; usage is billed separately by OpenAI.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
