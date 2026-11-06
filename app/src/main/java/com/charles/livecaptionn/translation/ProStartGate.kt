@@ -15,7 +15,5 @@ object ProStartGate {
         sourceLanguageCode: String,
         targetLanguageCode: String,
         hasPro: Boolean
-    ): Boolean = !hasPro &&
-        backend == TranslationBackend.ML_KIT &&
-        (MlKitLanguages.requiresPro(sourceLanguageCode) || MlKitLanguages.requiresPro(targetLanguageCode))
+    ): Boolean = false
 }
