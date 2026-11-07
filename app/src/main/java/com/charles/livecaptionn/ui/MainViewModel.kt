@@ -55,7 +55,6 @@ class MainViewModel(
                         viewModelScope.launch {
                             container.settingsRepository.update { curr ->
                                 curr.copy(
-                                    sttBackend = SttBackend.REMOTE_WHISPER,
                                     translationBackend = TranslationBackend.LIBRE_TRANSLATE
                                 )
                             }
