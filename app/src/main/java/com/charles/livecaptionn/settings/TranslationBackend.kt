@@ -1,20 +1,19 @@
 package com.charles.livecaptionn.settings
 
 /**
- * Which translator drives the text → text step of the pipeline.
+ * Translation route selected for captions.
  *
- * - [ML_KIT]: Google ML Kit on-device translation. Fully offline after the
- *   language pair is downloaded (once). ~30 MB per language, ~59 languages.
- * - [LIBRE_TRANSLATE]: HTTP call to a user-configured LibreTranslate server.
- *   Supports whatever languages the server has Argos packages for.
+ * OPENAI_WITH_PLAMO_FALLBACK keeps the Worker as the primary translator and
+ * uses the on-device PLaMo model only when the Worker fails.
  */
 enum class TranslationBackend {
     ML_KIT,
     LIBRE_TRANSLATE,
-    OPENAI_API;
+    OPENAI_API,
+    OPENAI_WITH_PLAMO_FALLBACK;
 
     companion object {
         fun fromName(name: String?): TranslationBackend =
-            entries.firstOrNull { it.name == name } ?: ML_KIT
+            entries.firstOrNull { it.name == name } ?: OPENAI_WITH_PLAMO_FALLBACK
     }
 }
