@@ -36,6 +36,11 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
                     p[TRANSLATION_PROFILE_V2] = true
                 }
             }
+                if (p[TRANSLATION_PROFILE_V3] != true) {
+                    p[TRANSLATION_BACKEND] = TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK.name
+                    p[TRANSLATION_PROFILE_V3] = true
+                }
+            }
         }
     }
 
@@ -119,6 +124,7 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
         val STT_BACKEND = stringPreferencesKey("stt_backend")
         val TRANSLATION_BACKEND = stringPreferencesKey("translation_backend")
         val TRANSLATION_PROFILE_V2 = booleanPreferencesKey("translation_profile_sensevoice_openai_novel_v2")
+        val TRANSLATION_PROFILE_V3 = booleanPreferencesKey("translation_profile_plamo_offline_fallback_v3")
         val STT_URL = stringPreferencesKey("stt_url")
         val OVERLAY_W = intPreferencesKey("overlay_w")
         val OVERLAY_H = intPreferencesKey("overlay_h")
