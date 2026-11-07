@@ -23,15 +23,17 @@ private val Context.dataStore by preferencesDataStore(name = "caption_settings")
 class SettingsDataStore(private val context: Context) : SettingsRepository {
 
     init {
-        // Apply the requested OpenAI 20+ Thai novel profile once to existing installs.
+        // Migrate existing installs to the agreed System Audio → local SenseVoice → OpenAI Thai pipeline.
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             context.dataStore.edit { p ->
-                if (p[TRANSLATION_PROFILE_V1] != true) {
+                if (p[TRANSLATION_PROFILE_V2] != true) {
                     p[TRANSLATION_BACKEND] = TranslationBackend.OPENAI_API.name
                     p[SHOW_ORIGINAL] = false
                     p[TARGET] = "th"
                     if (p[SOURCE] !in setOf("ja", "zh")) p[SOURCE] = "ja"
-                    p[TRANSLATION_PROFILE_V1] = true
+                    p[AUDIO_SOURCE] = AudioSource.SYSTEM.name
+                    p[STT_BACKEND] = SttBackend.LOCAL_SHERPA.name
+                    p[TRANSLATION_PROFILE_V2] = true
                 }
             }
         }
@@ -86,8 +88,8 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
             overlayX = this[OVERLAY_X] ?: 60,
             overlayY = this[OVERLAY_Y] ?: 220,
             overlayMinimized = this[OVERLAY_MIN] ?: false,
-            audioSource = AudioSource.fromName(this[AUDIO_SOURCE] ?: AudioSource.MIC.name),
-            sttBackend = SttBackend.fromName(this[STT_BACKEND] ?: SttBackend.LOCAL_VOSK.name),
+            audioSource = AudioSource.fromName(this[AUDIO_SOURCE] ?: AudioSource.SYSTEM.name),
+            sttBackend = SttBackend.fromName(this[STT_BACKEND] ?: SttBackend.LOCAL_SHERPA.name),
             translationBackend = TranslationBackend.fromName(this[TRANSLATION_BACKEND]),
             sttBaseUrl = this[STT_URL] ?: CaptionSettings.DEFAULT_STT_URL,
             overlayWidthDp = this[OVERLAY_W] ?: CaptionSettings.DEFAULT_OVERLAY_WIDTH_DP,
@@ -116,7 +118,7 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
         val AUDIO_SOURCE = stringPreferencesKey("audio_source")
         val STT_BACKEND = stringPreferencesKey("stt_backend")
         val TRANSLATION_BACKEND = stringPreferencesKey("translation_backend")
-        val TRANSLATION_PROFILE_V1 = booleanPreferencesKey("translation_profile_openai_novel_v1")
+        val TRANSLATION_PROFILE_V2 = booleanPreferencesKey("translation_profile_sensevoice_openai_novel_v2")
         val STT_URL = stringPreferencesKey("stt_url")
         val OVERLAY_W = intPreferencesKey("overlay_w")
         val OVERLAY_H = intPreferencesKey("overlay_h")
