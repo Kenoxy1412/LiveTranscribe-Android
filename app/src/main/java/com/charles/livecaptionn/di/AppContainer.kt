@@ -20,6 +20,7 @@ import com.charles.livecaptionn.translation.LibreTranslateRepository
 import com.charles.livecaptionn.translation.MlKitTranslationRepository
 import com.charles.livecaptionn.translation.OpenAiWorkerTranslationRepository
 import com.charles.livecaptionn.translation.PlamoTranslationRepository
+import com.charles.livecaptionn.translation.PlamoModelManager
 import com.charles.livecaptionn.translation.MockTranslationRepository
 import com.charles.livecaptionn.translation.RoutingTranslationRepository
 import com.charles.livecaptionn.translation.TranslationRepository
@@ -39,9 +40,12 @@ class AppContainer(context: Context) {
     private val libreTranslationRepository: TranslationRepository = LibreTranslateRepository(settingsRepository)
     private val mlKitTranslationRepository: TranslationRepository = MlKitTranslationRepository()
     private val openAiTranslationRepository: TranslationRepository = OpenAiWorkerTranslationRepository()
-    private val plamoTranslationRepository: TranslationRepository = PlamoTranslationRepository(
-        modelFile = context.applicationContext.getFileStreamPath("models/plamo-3-translate-0.8b-Q4_K_M.gguf")
+    private val plamoModelFile = context.applicationContext.getFileStreamPath(
+        "models/plamo-3-translate-0.8b-Q4_K_M.gguf"
     )
+    val plamoModelManager: PlamoModelManager = PlamoModelManager(plamoModelFile)
+    private val plamoTranslationRepository: TranslationRepository =
+        PlamoTranslationRepository(modelFile = plamoModelFile)
     val translationRepository: TranslationRepository = RoutingTranslationRepository(
         settingsRepository = settingsRepository,
         mlKit = mlKitTranslationRepository,
