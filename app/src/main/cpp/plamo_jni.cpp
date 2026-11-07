@@ -138,14 +138,18 @@ Java_com_charles_livecaptionn_translation_PlamoNative_nativeTranslate(
 
         char piece[512];
         int32_t pieceLength = llama_token_to_piece(vocab, next, piece, sizeof(piece), 0, true);
+        std::string pieceText;
         if (pieceLength < 0) {
             std::vector<char> largePiece(static_cast<size_t>(-pieceLength));
             pieceLength = llama_token_to_piece(vocab, next, largePiece.data(),
                                                static_cast<int32_t>(largePiece.size()), 0, true);
-            if (pieceLength > 0) output.append(largePiece.data(), static_cast<size_t>(pieceLength));
+            if (pieceLength > 0) pieceText.assign(largePiece.data(), static_cast<size_t>(pieceLength));
         } else if (pieceLength > 0) {
-            output.append(piece, static_cast<size_t>(pieceLength));
+            pieceText.assign(piece, static_cast<size_t>(pieceLength));
         }
+        // PFML3 translation ends when the model emits the next element tag.
+        if (pieceText == "<|plamo:tag|>" || pieceText == "<|plamo:bos|>") break;
+        output.append(pieceText);
 
         batch.n_tokens = 1;
         batch.token[0] = next;
