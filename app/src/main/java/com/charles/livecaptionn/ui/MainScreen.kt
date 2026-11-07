@@ -813,7 +813,7 @@ private fun LanguageCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                ui.libreLanguages.isEmpty() && ui.libreError != null -> {
+                ui.settings.translationBackend == TranslationBackend.LIBRE_TRANSLATE && ui.libreLanguages.isEmpty() && ui.libreError != null -> {
                     Text(
                         text = t.format(
                             "Could not reach LibreTranslate at %s — showing a fallback list. Save a valid URL to load the full language set from your server.",
@@ -823,7 +823,7 @@ private fun LanguageCard(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-                ui.libreLoading -> {
+                ui.settings.translationBackend == TranslationBackend.LIBRE_TRANSLATE && ui.libreLoading -> {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
@@ -834,7 +834,7 @@ private fun LanguageCard(
                         )
                     }
                 }
-                ui.libreLanguages.isNotEmpty() -> {
+                ui.settings.translationBackend == TranslationBackend.LIBRE_TRANSLATE && ui.libreLanguages.isNotEmpty() -> {
                     Text(
                         text = t.format(
                             "%d languages reported by LibreTranslate. Add more to your server by installing extra Argos Translate packages.",
