@@ -12,6 +12,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.coroutineContext
 
@@ -75,6 +76,8 @@ class PlamoModelManager(private val modelFile: File) {
                     partFile.delete()
                     offset = 0L
                 }
+                val expectedHash = response.header("x-linked-etag")?.trim('"')
+                    ?: response.header("etag")?.trim('"')
                 val body = response.body!!
                 val responseLength = body.contentLength()
                 val total = if (append && responseLength > 0L) offset + responseLength
@@ -106,6 +109,13 @@ class PlamoModelManager(private val modelFile: File) {
             if (size < MIN_MODEL_BYTES || size > MAX_MODEL_BYTES) {
                 throw IllegalStateException("ขนาดไฟล์โมเดลไม่ถูกต้อง (${size / 1_000_000} MB)")
             }
+            if (!expectedHash.isNullOrBlank() && expectedHash.matches(Regex("[0-9a-fA-F]{64}"))) {
+                val actualHash = sha256(partFile)
+                if (!actualHash.equals(expectedHash, ignoreCase = true)) {
+                    partFile.delete()
+                    throw IllegalStateException("ตรวจสอบ SHA-256 ของโมเดลไม่ผ่าน กรุณาดาวน์โหลดใหม่")
+                }
+            }
             if (modelFile.exists()) modelFile.delete()
             if (!partFile.renameTo(modelFile)) {
                 throw IllegalStateException("ไม่สามารถบันทึกไฟล์โมเดลได้")
@@ -130,6 +140,19 @@ class PlamoModelManager(private val modelFile: File) {
         partFile.delete()
         modelFile.delete()
         mutableState.value = snapshot()
+    }
+
+    private fun sha256(file: File): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buffer = ByteArray(1024 * 1024)
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                digest.update(buffer, 0, count)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
     private fun isInstalled(): Boolean =
