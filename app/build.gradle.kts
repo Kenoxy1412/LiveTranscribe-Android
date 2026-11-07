@@ -87,6 +87,10 @@ android {
             useSupportLibrary = true
         }
 
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
+
         // Inject server URLs; sanitizes any raw IP address so builds never ship baked-in IPs
         val defaultTranslate = sanitizeServerUrl(localProps.getProperty("translate.url"), "http://localhost:3006")
         val defaultStt = sanitizeServerUrl(localProps.getProperty("stt.url"), "http://localhost:9000/asr?output=json")
@@ -203,6 +207,12 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
     packaging {
         resources {
