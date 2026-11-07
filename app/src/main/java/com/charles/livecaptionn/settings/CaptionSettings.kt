@@ -15,7 +15,7 @@ data class CaptionSettings(
     val overlayMinimized: Boolean = false,
     val audioSource: AudioSource = AudioSource.SYSTEM,
     val sttBackend: SttBackend = SttBackend.LOCAL_SHERPA,
-    val translationBackend: TranslationBackend = TranslationBackend.OPENAI_API,
+    val translationBackend: TranslationBackend = TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK,
     val sttBaseUrl: String = DEFAULT_STT_URL,
     val overlayWidthDp: Int = DEFAULT_OVERLAY_WIDTH_DP,
     val overlayHeightDp: Int = DEFAULT_OVERLAY_HEIGHT_DP,
