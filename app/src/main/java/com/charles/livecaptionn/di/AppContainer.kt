@@ -19,6 +19,7 @@ import com.charles.livecaptionn.translation.LanguageCatalogStore
 import com.charles.livecaptionn.translation.LibreTranslateRepository
 import com.charles.livecaptionn.translation.MlKitTranslationRepository
 import com.charles.livecaptionn.translation.OpenAiWorkerTranslationRepository
+import com.charles.livecaptionn.translation.PlamoTranslationRepository
 import com.charles.livecaptionn.translation.MockTranslationRepository
 import com.charles.livecaptionn.translation.RoutingTranslationRepository
 import com.charles.livecaptionn.translation.TranslationRepository
@@ -38,11 +39,15 @@ class AppContainer(context: Context) {
     private val libreTranslationRepository: TranslationRepository = LibreTranslateRepository(settingsRepository)
     private val mlKitTranslationRepository: TranslationRepository = MlKitTranslationRepository()
     private val openAiTranslationRepository: TranslationRepository = OpenAiWorkerTranslationRepository()
+    private val plamoTranslationRepository: TranslationRepository = PlamoTranslationRepository(
+        modelFile = context.applicationContext.getFileStreamPath("models/plamo-3-translate-0.8b-Q4_K_M.gguf")
+    )
     val translationRepository: TranslationRepository = RoutingTranslationRepository(
         settingsRepository = settingsRepository,
         mlKit = mlKitTranslationRepository,
         libre = libreTranslationRepository,
-        openAi = openAiTranslationRepository
+        openAi = openAiTranslationRepository,
+        plamo = plamoTranslationRepository
     )
     val mockTranslationRepository: TranslationRepository = MockTranslationRepository()
     val transcriptHistory: TranscriptHistoryStore = TranscriptHistoryStore(context.applicationContext)
