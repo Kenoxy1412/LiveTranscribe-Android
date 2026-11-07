@@ -81,6 +81,6 @@ data class MainUiState(
         TranslationBackend.ML_KIT -> MlKitLanguages.LIST
         TranslationBackend.LIBRE_TRANSLATE ->
             if (libreLanguages.isNotEmpty()) libreLanguages else Language.FALLBACK
-        TranslationBackend.OPENAI_API -> Language.FALLBACK
+        TranslationBackend.OPENAI_API, TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK -> Language.FALLBACK
     }
 }
