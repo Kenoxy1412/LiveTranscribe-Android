@@ -7,6 +7,6 @@ enum class SttBackend(val label: String) {
 
     companion object {
         fun fromName(name: String): SttBackend =
-            entries.firstOrNull { it.name == name } ?: LOCAL_VOSK
+            entries.firstOrNull { it.name == name } ?: LOCAL_SHERPA
     }
 }
