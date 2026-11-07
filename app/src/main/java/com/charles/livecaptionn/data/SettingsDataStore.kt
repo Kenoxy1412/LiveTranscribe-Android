@@ -23,7 +23,7 @@ private val Context.dataStore by preferencesDataStore(name = "caption_settings")
 class SettingsDataStore(private val context: Context) : SettingsRepository {
 
     init {
-        // Migrate existing installs to the agreed System Audio → local SenseVoice → OpenAI Thai pipeline.
+        // Migrate the established system-audio / local SenseVoice profile.
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             context.dataStore.edit { p ->
                 if (p[TRANSLATION_PROFILE_V2] != true) {
@@ -35,7 +35,6 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
                     p[STT_BACKEND] = SttBackend.LOCAL_SHERPA.name
                     p[TRANSLATION_PROFILE_V2] = true
                 }
-            }
                 if (p[TRANSLATION_PROFILE_V3] != true) {
                     p[TRANSLATION_BACKEND] = TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK.name
                     p[TRANSLATION_PROFILE_V3] = true
