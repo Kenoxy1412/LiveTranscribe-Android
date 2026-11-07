@@ -66,6 +66,10 @@ data class MainUiState(
                 // engine supports.
                 com.charles.livecaptionn.settings.SttBackend.REMOTE_WHISPER ->
                     translationLanguages()
+                // SenseVoice supports Japanese, Chinese, English and Korean.
+                // Keep the source picker limited to languages the local model can recognize.
+                com.charles.livecaptionn.settings.SttBackend.LOCAL_SHERPA ->
+                    Language.FALLBACK.filter { it.code.lowercase() in setOf("ja", "zh", "en", "ko") }
             }
         }
 
