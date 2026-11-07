@@ -30,6 +30,7 @@ import com.charles.livecaptionn.update.UpdateNotifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import java.io.File
 
 class AppContainer(context: Context) {
     /** Long-lived scope for container-owned background work (catalog fetches etc.). */
@@ -40,8 +41,12 @@ class AppContainer(context: Context) {
     private val libreTranslationRepository: TranslationRepository = LibreTranslateRepository(settingsRepository)
     private val mlKitTranslationRepository: TranslationRepository = MlKitTranslationRepository()
     private val openAiTranslationRepository: TranslationRepository = OpenAiWorkerTranslationRepository()
-    private val plamoModelFile = context.applicationContext.getFileStreamPath(
-        "models/plamo-3-translate-0.8b-Q4_K_M.gguf"
+    private val plamoModelDirectory = File(context.applicationContext.filesDir, "models").apply {
+        mkdirs()
+    }
+    private val plamoModelFile = File(
+        plamoModelDirectory,
+        "plamo-3-translate-0.8b-Q4_K_M.gguf"
     )
     val plamoModelManager: PlamoModelManager = PlamoModelManager(plamoModelFile)
     private val plamoTranslationRepository: TranslationRepository =
