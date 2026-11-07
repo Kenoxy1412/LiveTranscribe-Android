@@ -119,6 +119,12 @@ class MainViewModel(
                 mutableState.value = mutableState.value.copy(voskDownloadErrors = errors)
             }
         }
+        viewModelScope.launch {
+            container.plamoModelManager.state.collectLatest { modelState ->
+                mutableState.value = mutableState.value.copy(plamoDownload = modelState)
+            }
+        }
+        container.plamoModelManager.refresh()
         if (BuildConfig.GITHUB_SELF_UPDATE_ENABLED) {
             viewModelScope.launch {
                 container.updateChecker.available.collectLatest { info ->
@@ -219,6 +225,15 @@ class MainViewModel(
 
     fun refreshLibreCatalog() {
         container.languageCatalogStore.refresh()
+    }
+
+    fun downloadPlamoModel() {
+        if (mutableState.value.plamoDownload.downloading || mutableState.value.plamoDownload.installed) return
+        viewModelScope.launch { runCatching { container.plamoModelManager.download() } }
+    }
+
+    fun deletePlamoModel() {
+        container.plamoModelManager.delete()
     }
 
     fun updateAudioSource(source: AudioSource) {
