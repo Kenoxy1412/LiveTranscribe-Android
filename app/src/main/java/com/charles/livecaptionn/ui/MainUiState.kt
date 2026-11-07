@@ -5,6 +5,7 @@ import com.charles.livecaptionn.settings.CaptionSettings
 import com.charles.livecaptionn.settings.Language
 import com.charles.livecaptionn.settings.TranslationBackend
 import com.charles.livecaptionn.speech.VoskModelInfo
+import com.charles.livecaptionn.translation.PlamoDownloadState
 import com.charles.livecaptionn.translation.MlKitLanguages
 import com.charles.livecaptionn.ui.l10n.UiLocalizationRepository.UiLocalizationStage
 import com.charles.livecaptionn.compatibility.DeviceSpecs
@@ -22,6 +23,7 @@ data class MainUiState(
     val voskDownloadProgress: Map<String, Float> = emptyMap(),
     /** Last failed download per model name, shown in the model sheet. */
     val voskDownloadErrors: Map<String, String> = emptyMap(),
+    val plamoDownload: PlamoDownloadState = PlamoDownloadState(),
     val availableUpdate: UpdateInfo? = null,
     /** True when the running APK was installed from the Google Play Store. Used
      *  to warn Play Store users before they grab a (potentially unstable)
