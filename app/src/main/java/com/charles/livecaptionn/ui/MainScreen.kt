@@ -1372,7 +1372,15 @@ private fun ServerCard(
             }
 
             ChoiceChip(
-                label = "OpenAI (fast + low cost)",
+                label = "OpenAI + Offline PLaMo",
+                icon = Icons.Filled.Cloud,
+                selected = ui.settings.translationBackend == TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK,
+                onClick = { onSelectTranslationBackend(TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            ChoiceChip(
+                label = "OpenAI only",
                 icon = Icons.Filled.Cloud,
                 selected = ui.settings.translationBackend == TranslationBackend.OPENAI_API,
                 onClick = { onSelectTranslationBackend(TranslationBackend.OPENAI_API) },
@@ -1388,6 +1396,12 @@ private fun ServerCard(
             } else if (ui.settings.translationBackend == TranslationBackend.OPENAI_API) {
                 Text(
                     text = "OpenAI translates finalized speech through your private Cloudflare Worker. API key stays on the server. Internet required; usage is billed separately by OpenAI.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else if (ui.settings.translationBackend == TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK) {
+                Text(
+                    text = "OpenAI Worker is the primary translator. If it is unavailable, the app falls back to PLaMo running locally. Download the offline model to enable fallback. Audio is never uploaded.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
