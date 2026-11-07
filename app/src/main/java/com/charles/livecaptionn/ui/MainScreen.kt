@@ -623,7 +623,7 @@ private fun PermissionsCard(
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SectionLabel(t["Permissions"])
-            PermissionRow(t["Microphone"], ui.micPermissionGranted) { onRequestAudioPermission() }
+            // System Audio capture does not use the microphone.
             PermissionRow(t["Overlay"], ui.overlayPermissionGranted) { onOpenOverlaySettings() }
         }
     }
@@ -666,105 +666,36 @@ private fun AudioSourceCard(
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SectionLabel(t["Audio Source"])
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ChoiceChip(
-                    label = t["Microphone"],
-                    icon = Icons.Filled.Mic,
-                    selected = ui.settings.audioSource == AudioSource.MIC,
-                    onClick = { viewModel.updateAudioSource(AudioSource.MIC) },
-                    modifier = Modifier.weight(1f)
-                )
-                ChoiceChip(
                     label = t["System Audio"],
                     icon = Icons.Filled.SurroundSound,
-                    selected = ui.settings.audioSource == AudioSource.SYSTEM,
-                    onClick = { viewModel.updateAudioSource(AudioSource.SYSTEM) },
+                    selected = true,
+                    onClick = {},
                     modifier = Modifier.weight(1f)
                 )
             }
-
-            val isSystem = ui.settings.audioSource == AudioSource.SYSTEM
             Text(
-                text = if (isSystem)
-                    t["Captures audio from videos and apps that allow playback capture. If Android asks, choose Share entire screen."]
-                else
-                    t["Uses the device microphone."],
+                text = "Captures MX Player and other supported app playback using Android AudioPlaybackCapture. Audio stays on this device.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(t["Transcription engine"], style = MaterialTheme.typography.labelMedium)
-            val isSttUnsupported = ui.deviceSpecs?.tier == CompatibilityTier.UNSUPPORTED
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ChoiceChip(
-                    label = if (isSystem) t["Remote Whisper"] else t["Android built-in"],
-                    icon = Icons.Filled.Cloud,
-                    selected = ui.settings.sttBackend == SttBackend.REMOTE_WHISPER,
-                    onClick = { viewModel.updateSttBackend(SttBackend.REMOTE_WHISPER) },
-                    modifier = Modifier.weight(1f)
-                )
-                ChoiceChip(
-                    label = if (isSttUnsupported) t["Local Vosk"] + " 🔒" else t["Local Vosk"],
-                    icon = if (isSttUnsupported) Icons.Filled.Lock else Icons.Filled.Mic,
-                    selected = ui.settings.sttBackend == SttBackend.LOCAL_VOSK,
-                    onClick = { viewModel.updateSttBackend(SttBackend.LOCAL_VOSK) },
-                    modifier = Modifier.weight(1f)
-                )
-                ChoiceChip(
-                    label = "sherpa-onnx",
-                    icon = Icons.Filled.Memory,
-                    selected = ui.settings.sttBackend == SttBackend.LOCAL_SHERPA,
-                    onClick = { viewModel.updateSttBackend(SttBackend.LOCAL_SHERPA) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            if (ui.settings.sttBackend == SttBackend.LOCAL_VOSK) {
-                val installed = ui.voskModels.count { it.installed }
-                val anyLargeInstalled = ui.voskModels.any { it.installed && it.quality == ModelQuality.LARGE }
-                val langWord = if (installed == 1) t["language"] else t["languages"]
-                Text(
-                    text = t["Runs transcription fully on this device."] +
-                        " $installed $langWord ${t["installed."]}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (!anyLargeInstalled) {
-                    Text(
-                        text = t["Tip: for noticeably stronger transcription, tap Manage models and install a LARGE server-grade model for the languages you use — 80 MB to 2 GB each, fully offline after download."],
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-                }
-                OutlinedButton(
-                    onClick = onManageModels,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(t["Manage on-device models"])
-                }
-            } else if (ui.settings.sttBackend == SttBackend.LOCAL_SHERPA) {
-                Text(
-                    text = "Offline SenseVoice recognition for Japanese, Chinese, Korean, English and Cantonese. First use downloads the approximately 239 MB model once; recognition then runs locally. Requires System Audio Capture.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                Text(
-                    text = if (isSystem)
-                        t["Sends captured audio to the configured Whisper ASR endpoint."]
-                    else
-                        t["Uses Android's built-in recognizer. Available locales depend on what's installed on this device."],
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ChoiceChip(
+                label = "SenseVoice · sherpa-onnx (On-device)",
+                icon = Icons.Filled.Memory,
+                selected = true,
+                onClick = {},
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = "Japanese and Chinese speech are recognized locally. The multilingual SenseVoice model is downloaded once; audio is never sent to a transcription server.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
