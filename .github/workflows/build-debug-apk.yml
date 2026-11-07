@@ -3,7 +3,7 @@ name: Build LiveTranscribe APKs
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, feature/plamo-offline-translation ]
 
 permissions:
   contents: read
