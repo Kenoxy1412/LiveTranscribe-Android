@@ -318,6 +318,8 @@ fun MainScreen(
                 onSaveTranslateUrl = { viewModel.updateBaseUrl(translateUrlDraft) },
                 onRefreshLibre = { viewModel.refreshLibreCatalog() },
                 onSelectTranslationBackend = viewModel::updateTranslationBackend,
+                onDownloadPlamo = viewModel::downloadPlamoModel,
+                onDeletePlamo = viewModel::deletePlamoModel,
                 sttUrl = sttUrlDraft,
                 onSttUrlChange = { sttUrlDraft = it },
                 onSaveSttUrl = { viewModel.updateSttUrl(sttUrlDraft) },
@@ -1336,6 +1338,8 @@ private fun ServerCard(
     onSaveTranslateUrl: () -> Unit,
     onRefreshLibre: () -> Unit,
     onSelectTranslationBackend: (TranslationBackend) -> Unit,
+    onDownloadPlamo: () -> Unit,
+    onDeletePlamo: () -> Unit,
     sttUrl: String,
     onSttUrlChange: (String) -> Unit,
     onSaveSttUrl: () -> Unit,
@@ -1401,10 +1405,49 @@ private fun ServerCard(
                 )
             } else if (ui.settings.translationBackend == TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK) {
                 Text(
-                    text = "OpenAI Worker is the primary translator. If it is unavailable, the app falls back to PLaMo running locally. Download the offline model to enable fallback. Audio is never uploaded.",
+                    text = "OpenAI Worker is the primary translator. If it is unavailable, the app falls back to PLaMo running locally. Audio is never uploaded.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                val model = ui.plamoDownload
+                if (model.downloading) {
+                    LinearProgressIndicator(
+                        progress = { model.progress },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = "Downloading offline model: ${(model.progress * 100).toInt()}% (${model.downloadedBytes / 1_000_000} / ${model.totalBytes / 1_000_000} MB)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else if (model.installed) {
+                    Text(
+                        text = "Offline model ready. PLaMo can translate without internet when the Worker is unavailable.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    OutlinedButton(onClick = onDeletePlamo, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Delete offline model")
+                    }
+                } else {
+                    FilledTonalButton(onClick = onDownloadPlamo, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(if (model.downloadedBytes > 0L) "Resume offline model download" else "Download offline model (~570 MB)")
+                    }
+                    if (model.downloadedBytes > 0L) {
+                        Text(
+                            text = "Downloaded ${model.downloadedBytes / 1_000_000} MB. You can resume the download.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                model.error?.let { error ->
+                    Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
             } else {
                 OutlinedTextField(
                     value = translateUrl,
