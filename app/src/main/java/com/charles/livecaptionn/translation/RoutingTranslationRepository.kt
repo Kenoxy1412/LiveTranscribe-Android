@@ -29,6 +29,7 @@ class RoutingTranslationRepository(
                 libre.translate(text, sourceCode, targetCode, autoDetect)
             TranslationBackend.OPENAI_API ->
                 openAi.translate(text, sourceCode, targetCode, autoDetect)
+            TranslationBackend.PLAMO_OFFLINE -> plamo.translate(text, sourceCode, targetCode, autoDetect)
             TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK -> {
                 val online = runCatching {
                     openAi.translate(text, sourceCode, targetCode, autoDetect)
@@ -41,7 +42,7 @@ class RoutingTranslationRepository(
 
     override suspend fun prewarm(sourceCode: String, targetCode: String) {
         when (settingsRepository.settingsFlow.first().translationBackend) {
-            TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK ->
+            TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK, TranslationBackend.PLAMO_OFFLINE ->
                 plamo.prewarm(sourceCode, targetCode)
             TranslationBackend.ML_KIT -> mlKit.prewarm(sourceCode, targetCode)
             TranslationBackend.LIBRE_TRANSLATE -> libre.prewarm(sourceCode, targetCode)
