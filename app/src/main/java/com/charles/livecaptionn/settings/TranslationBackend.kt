@@ -10,7 +10,8 @@ enum class TranslationBackend {
     ML_KIT,
     LIBRE_TRANSLATE,
     OPENAI_API,
-    OPENAI_WITH_PLAMO_FALLBACK;
+    OPENAI_WITH_PLAMO_FALLBACK,
+    PLAMO_OFFLINE;
 
     companion object {
         fun fromName(name: String?): TranslationBackend =
