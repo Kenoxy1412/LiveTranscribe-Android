@@ -1366,20 +1366,13 @@ private fun ServerCard(
                     onClick = { onSelectTranslationBackend(TranslationBackend.ML_KIT) },
                     modifier = Modifier.weight(1f)
                 )
-                ChoiceChip(
-                    label = t["LibreTranslate"],
-                    icon = Icons.Filled.Cloud,
-                    selected = ui.settings.translationBackend == TranslationBackend.LIBRE_TRANSLATE,
-                    onClick = { onSelectTranslationBackend(TranslationBackend.LIBRE_TRANSLATE) },
-                    modifier = Modifier.weight(1f)
-                )
             }
 
             ChoiceChip(
-                label = "OpenAI + Offline PLaMo",
+                label = "PLaMo Offline only",
                 icon = Icons.Filled.Cloud,
-                selected = ui.settings.translationBackend == TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK,
-                onClick = { onSelectTranslationBackend(TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK) },
+                selected = ui.settings.translationBackend == TranslationBackend.PLAMO_OFFLINE,
+                onClick = { onSelectTranslationBackend(TranslationBackend.PLAMO_OFFLINE) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1403,9 +1396,9 @@ private fun ServerCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            } else if (ui.settings.translationBackend == TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK) {
+            } else if (ui.settings.translationBackend == TranslationBackend.PLAMO_OFFLINE || ui.settings.translationBackend == TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK) {
                 Text(
-                    text = "OpenAI Worker is the primary translator. If it is unavailable, the app falls back to PLaMo running locally. Audio is never uploaded.",
+                    text = if (ui.settings.translationBackend == TranslationBackend.PLAMO_OFFLINE) "PLaMo translates directly on this device. No OpenAI or internet is needed after the model is downloaded." else "OpenAI Worker is the primary translator. If it is unavailable, the app falls back to PLaMo running locally. Audio is never uploaded.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1422,7 +1415,7 @@ private fun ServerCard(
                     )
                 } else if (model.installed) {
                     Text(
-                        text = "Offline model ready. PLaMo can translate without internet when the Worker is unavailable.",
+                        text = "Offline model ready. PLaMo can translate locally without internet.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -1448,7 +1441,7 @@ private fun ServerCard(
                 model.error?.let { error ->
                     Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 }
-            } else {
+            } else if (ui.settings.translationBackend == TranslationBackend.LIBRE_TRANSLATE) {
                 OutlinedTextField(
                     value = translateUrl,
                     onValueChange = onTranslateUrlChange,
