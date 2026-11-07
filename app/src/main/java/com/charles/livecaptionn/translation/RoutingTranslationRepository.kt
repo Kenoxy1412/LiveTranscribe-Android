@@ -5,51 +5,54 @@ import com.charles.livecaptionn.settings.TranslationBackend
 import kotlinx.coroutines.flow.first
 
 /**
- * Dispatches each translation call to the backend selected in user settings.
- *
- * Caches the active backend so we don't read settings flow on every call.
- * Settings changes are rare relative to translation call frequency, so a
- * lazy fresh-on-mismatch strategy avoids coroutine overhead per call.
+ * Dispatches caption translation to the selected backend.
+ * The hybrid route always tries the Worker first and falls back to local PLaMo.
  */
 class RoutingTranslationRepository(
     private val settingsRepository: SettingsRepository,
     private val mlKit: TranslationRepository,
     private val libre: TranslationRepository,
-    private val openAi: TranslationRepository
+    private val openAi: TranslationRepository,
+    private val plamo: TranslationRepository
 ) : TranslationRepository {
-
-    private var cachedBackend: TranslationBackend? = null
-    private var cachedDelegate: TranslationRepository? = null
 
     override suspend fun translate(
         text: String,
         sourceCode: String,
         targetCode: String,
         autoDetect: Boolean
-    ): String = activeDelegate().translate(text, sourceCode, targetCode, autoDetect)
-
-    override suspend fun prewarm(sourceCode: String, targetCode: String) {
-        activeDelegate().prewarm(sourceCode, targetCode)
+    ): String {
+        return when (settingsRepository.settingsFlow.first().translationBackend) {
+            TranslationBackend.ML_KIT ->
+                mlKit.translate(text, sourceCode, targetCode, autoDetect)
+            TranslationBackend.LIBRE_TRANSLATE ->
+                libre.translate(text, sourceCode, targetCode, autoDetect)
+            TranslationBackend.OPENAI_API ->
+                openAi.translate(text, sourceCode, targetCode, autoDetect)
+            TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK -> {
+                val online = runCatching {
+                    openAi.translate(text, sourceCode, targetCode, autoDetect)
+                }.getOrDefault("")
+                if (online.isNotBlank()) online
+                else plamo.translate(text, sourceCode, targetCode, autoDetect)
+            }
+        }
     }
 
-    private suspend fun activeDelegate(): TranslationRepository {
-        val backend = settingsRepository.settingsFlow.first().translationBackend
-        if (cachedBackend == backend && cachedDelegate != null) {
-            return cachedDelegate!!
+    override suspend fun prewarm(sourceCode: String, targetCode: String) {
+        when (settingsRepository.settingsFlow.first().translationBackend) {
+            TranslationBackend.OPENAI_WITH_PLAMO_FALLBACK ->
+                plamo.prewarm(sourceCode, targetCode)
+            TranslationBackend.ML_KIT -> mlKit.prewarm(sourceCode, targetCode)
+            TranslationBackend.LIBRE_TRANSLATE -> libre.prewarm(sourceCode, targetCode)
+            TranslationBackend.OPENAI_API -> openAi.prewarm(sourceCode, targetCode)
         }
-        val delegate = when (backend) {
-            TranslationBackend.ML_KIT -> mlKit
-            TranslationBackend.LIBRE_TRANSLATE -> libre
-            TranslationBackend.OPENAI_API -> openAi
-        }
-        cachedBackend = backend
-        cachedDelegate = delegate
-        return delegate
     }
 
     override fun close() {
         mlKit.close()
         libre.close()
         openAi.close()
+        plamo.close()
     }
 }
