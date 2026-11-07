@@ -61,6 +61,7 @@ class PlamoModelManager(private val modelFile: File) {
 
         var offset = if (partFile.exists()) partFile.length() else 0L
         mutableState.value = snapshot().copy(downloading = true, error = null, downloadedBytes = offset)
+        var expectedHash: String? = null
         try {
             val request = Request.Builder()
                 .url(MODEL_URL)
@@ -76,7 +77,7 @@ class PlamoModelManager(private val modelFile: File) {
                     partFile.delete()
                     offset = 0L
                 }
-                val expectedHash = response.header("x-linked-etag")?.trim('"')
+                expectedHash = response.header("x-linked-etag")?.trim('"')
                     ?: response.header("etag")?.trim('"')
                 val body = response.body!!
                 val responseLength = body.contentLength()
