@@ -49,7 +49,7 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
             p[TARGET] = next.targetLanguageCode
             p[AUTO_DETECT] = next.autoDetectSource
             p[TEXT_SIZE] = next.textSizeSp
-            p[OPACITY] = next.overlayOpacity.coerceIn(0.2f, 1f)
+            p[OPACITY] = next.overlayOpacity.coerceIn(0.0f, 1.0f)
             p[SHOW_ORIGINAL] = next.showOriginal
             p[BASE_URL] = next.serverBaseUrl.trim()
             p[OVERLAY_X] = next.overlayX
