@@ -185,7 +185,13 @@ class CaptionForegroundService : Service() {
                 currentAudioSource = settings.audioSource
                 if (!enterForeground(currentAudioSource)) return@launch
             }
-            val sttLanguageCode = settings.sourceLanguageCode.ifBlank { "en" }
+            if (settings.audioSource != AudioSource.SYSTEM ||
+                settings.sttBackend != SttBackend.LOCAL_SHERPA
+            ) {
+                failAndStop("This build is configured for System Audio → local SenseVoice only. Reopen the app to apply the updated settings.")
+                return@launch
+            }
+            val sttLanguageCode = settings.sourceLanguageCode.ifBlank { "ja" }
             val localeForSpeechRec = LocaleMap.bcp47(sttLanguageCode)
 
             val premium = app.container.premiumRepository.state.first()
@@ -399,7 +405,7 @@ class CaptionForegroundService : Service() {
         hasPro: Boolean
     ) = OverlayUiState(
         originalText = runtime.originalText,
-        translatedText = runtime.translatedText.ifBlank { runtime.originalText },
+        translatedText = runtime.translatedText,
         transcriptText = overlayTranscriptText(runtime),
         status = runtime.status,
         statusDetail = runtime.lastError,
