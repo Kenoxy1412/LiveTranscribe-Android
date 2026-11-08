@@ -186,9 +186,9 @@ class CaptionForegroundService : Service() {
                 if (!enterForeground(currentAudioSource)) return@launch
             }
             if (settings.audioSource != AudioSource.SYSTEM ||
-                settings.sttBackend != SttBackend.LOCAL_SHERPA
+                settings.sttBackend !in setOf(SttBackend.LOCAL_SHERPA, SttBackend.LOCAL_WHISPER)
             ) {
-                failAndStop("This build is configured for System Audio → local SenseVoice only. Reopen the app to apply the updated settings.")
+                failAndStop("Select System Audio and an on-device speech recognizer (Whisper or SenseVoice). Reopen the app to apply the settings.")
                 return@launch
             }
             val sttLanguageCode = settings.sourceLanguageCode.ifBlank { "ja" }
@@ -205,8 +205,8 @@ class CaptionForegroundService : Service() {
                 failAndStop("This ML Kit language requires Pro. Choose a free language or upgrade.")
                 return@launch
             }
-            if (settings.sttBackend == SttBackend.LOCAL_SHERPA && currentAudioSource != AudioSource.SYSTEM) {
-                failAndStop("sherpa-onnx requires System Audio Capture. Select System Audio to capture MX Player playback.")
+            if (settings.sttBackend in setOf(SttBackend.LOCAL_SHERPA, SttBackend.LOCAL_WHISPER) && currentAudioSource != AudioSource.SYSTEM) {
+                failAndStop("Offline Whisper/SenseVoice requires System Audio Capture. Select System Audio to capture MX Player playback.")
                 return@launch
             }
             if (settings.sttBackend == SttBackend.LOCAL_VOSK) {
@@ -339,6 +339,7 @@ class CaptionForegroundService : Service() {
                             sttBackend = settings.sttBackend,
                             localSttClient = app.container.localVoskClient,
                             sherpaSttClient = app.container.sherpaSttClient,
+                            whisperSttClient = app.container.whisperSttClient,
                             scope = serviceScope,
                             onResult = onSpeechResult,
                             onSttError = errorSink
