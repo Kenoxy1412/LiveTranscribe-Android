@@ -34,6 +34,7 @@ class SystemAudioEngine(
     private val sttBackend: SttBackend,
     private val localSttClient: LocalVoskSttClient,
     private val sherpaSttClient: SherpaSenseVoiceSttClient,
+    private val whisperSttClient: WhisperOfflineSttClient,
     private val scope: CoroutineScope,
     private val onResult: (SpeechResult) -> Unit,
     /** Null clears any STT error hint after a successful round-trip to the server. */
