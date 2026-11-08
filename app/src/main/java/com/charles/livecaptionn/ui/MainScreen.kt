@@ -687,14 +687,30 @@ private fun AudioSourceCard(
             )
             Text(t["Transcription engine"], style = MaterialTheme.typography.labelMedium)
             ChoiceChip(
+                label = "Whisper · multilingual (On-device)",
+                icon = Icons.Filled.Memory,
+                selected = ui.settings.sttBackend == SttBackend.LOCAL_WHISPER,
+                onClick = { viewModel.updateSttBackend(SttBackend.LOCAL_WHISPER) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            ChoiceChip(
                 label = "SenseVoice · sherpa-onnx (On-device)",
                 icon = Icons.Filled.Memory,
-                selected = true,
-                onClick = {},
+                selected = ui.settings.sttBackend == SttBackend.LOCAL_SHERPA,
+                onClick = { viewModel.updateSttBackend(SttBackend.LOCAL_SHERPA) },
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
-                text = "Japanese and Chinese speech are recognized locally. The multilingual SenseVoice model is downloaded once; audio is never sent to a transcription server.",
+                text = when (ui.settings.sttBackend) {
+                    SttBackend.LOCAL_WHISPER ->
+                        "Whisper multilingual runs on this device. Japanese, Chinese, English and Korean are supported. The model downloads once (~160 MB); audio stays on this device."
+                    SttBackend.LOCAL_SHERPA ->
+                        "Japanese and Chinese speech are recognized locally. The multilingual SenseVoice model is downloaded once; audio is never sent to a transcription server."
+                    SttBackend.REMOTE_WHISPER ->
+                        "Remote Whisper sends audio to the configured transcription server."
+                    SttBackend.LOCAL_VOSK ->
+                        "Vosk runs locally using a downloaded language model."
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
