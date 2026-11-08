@@ -56,7 +56,7 @@ class WhisperOfflineSttClient(private val context: Context) {
                     tailPaddings = 300
                 ),
                 tokens = File(modelDirectory, TOKENS_FILE).absolutePath,
-                numThreads = 3,
+                numThreads = 4,
                 provider = "cpu",
                 modelType = "whisper"
             )
