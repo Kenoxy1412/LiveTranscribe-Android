@@ -147,6 +147,7 @@ class OverlayController(
 
         originalText = TextView(context).apply {
             setTextColor(Color.WHITE)
+            setShadowLayer(dp(2).toFloat(), 0f, 0f, Color.BLACK)
             text = ""
             setLineSpacing(dp(2).toFloat(), 1.05f)
             setPadding(0, dp(1), 0, dp(2))
@@ -175,6 +176,7 @@ class OverlayController(
         // Translated text / scrolling history (primary caption body)
         translatedText = TextView(context).apply {
             setTextColor(Color.WHITE)
+            setShadowLayer(dp(2).toFloat(), 0f, 0f, Color.BLACK)
             text = "…"
             setLineSpacing(dp(3).toFloat(), 1.1f)
             setPadding(0, dp(2), 0, dp(4))
@@ -377,11 +379,37 @@ class OverlayController(
             longPressTriggered = true
             setClickThroughEnabled(!clickThroughEnabled)
         }
+        var draggingHandle = false
+        var downRawX = 0f
+        var downRawY = 0f
+        var startHandleX = hp.x
+        var startHandleY = hp.y
+        val dragSlop = android.view.ViewConfiguration.get(context).scaledTouchSlop
+
         handle.setOnTouchListener { v, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     longPressTriggered = false
+                    draggingHandle = false
+                    downRawX = event.rawX
+                    downRawY = event.rawY
+                    startHandleX = hp.x
+                    startHandleY = hp.y
                     touchHandler.postDelayed(toggle, 2000L)
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX - downRawX
+                    val dy = event.rawY - downRawY
+                    if (!draggingHandle && (kotlin.math.abs(dx) > dragSlop || kotlin.math.abs(dy) > dragSlop)) {
+                        draggingHandle = true
+                        touchHandler.removeCallbacks(toggle)
+                    }
+                    if (draggingHandle) {
+                        hp.x = (startHandleX + dx.roundToInt()).coerceAtLeast(0)
+                        hp.y = (startHandleY + dy.roundToInt()).coerceAtLeast(0)
+                        try { wm.updateViewLayout(v, hp) } catch (_: Throwable) { }
+                    }
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
