@@ -52,7 +52,8 @@ class WhisperOfflineSttClient(private val context: Context) {
                     encoder = File(modelDirectory, ENCODER_FILE).absolutePath,
                     decoder = File(modelDirectory, DECODER_FILE).absolutePath,
                     language = language,
-                    task = "transcribe"
+                    task = "transcribe",
+                    tailPaddings = 300
                 ),
                 tokens = File(modelDirectory, TOKENS_FILE).absolutePath,
                 numThreads = 3,
