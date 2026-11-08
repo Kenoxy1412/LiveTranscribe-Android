@@ -70,7 +70,8 @@ data class MainUiState(
                     translationLanguages()
                 // SenseVoice supports Japanese, Chinese, English and Korean.
                 // Keep the source picker limited to languages the local model can recognize.
-                com.charles.livecaptionn.settings.SttBackend.LOCAL_SHERPA ->
+                com.charles.livecaptionn.settings.SttBackend.LOCAL_SHERPA,
+                com.charles.livecaptionn.settings.SttBackend.LOCAL_WHISPER ->
                     Language.FALLBACK.filter { it.code.lowercase() in setOf("ja", "zh", "en", "ko") }
             }
         }
