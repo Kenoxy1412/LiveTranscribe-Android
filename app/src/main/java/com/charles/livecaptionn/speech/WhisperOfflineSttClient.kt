@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit
  */
 class WhisperOfflineSttClient(private val context: Context) {
     private val mutex = Mutex()
+    private val recognizerLock = Any()
     private val http = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.MINUTES)
@@ -86,7 +87,7 @@ class WhisperOfflineSttClient(private val context: Context) {
             offset += 2
         }
 
-        synchronized(active) {
+        synchronized(recognizerLock) {
             val stream = active.createStream()
             return try {
                 stream.acceptWaveform(samples, SAMPLE_RATE)
@@ -99,7 +100,7 @@ class WhisperOfflineSttClient(private val context: Context) {
     }
 
     fun release() {
-        synchronized(this) {
+        synchronized(recognizerLock) {
             try { recognizer?.release() } catch (_: Throwable) {}
             recognizer = null
             recognizerLanguage = null
