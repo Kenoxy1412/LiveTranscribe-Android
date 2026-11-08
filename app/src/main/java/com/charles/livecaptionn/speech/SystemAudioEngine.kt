@@ -54,7 +54,24 @@ class SystemAudioEngine(
         if (running) return
         running = true
         paused = false
-        if (sttBackend == SttBackend.LOCAL_SHERPA) {
+        if (sttBackend == SttBackend.LOCAL_WHISPER) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    statusMutable.value = RecognitionStatus.PROCESSING
+                    if (!whisperSttClient.isModelInstalled()) {
+                        onSttError("Downloading multilingual Whisper model (about 160 MB). First launch only.")
+                    }
+                    whisperSttClient.prepare(sourceLanguageCode)
+                    onSttError(null)
+                    if (running) startCapture()
+                } catch (t: Throwable) {
+                    Log.e("SystemAudioEngine", "Offline Whisper initialization failed", t)
+                    onSttError("Offline Whisper initialization failed: ${t.message ?: t::class.java.simpleName}")
+                    statusMutable.value = RecognitionStatus.ERROR
+                    running = false
+                }
+            }
+        } else if (sttBackend == SttBackend.LOCAL_SHERPA) {
             scope.launch(Dispatchers.IO) {
                 try {
                     statusMutable.value = RecognitionStatus.PROCESSING
@@ -88,6 +105,7 @@ class SystemAudioEngine(
             audioRecord?.release()
         } catch (_: Throwable) {}
         audioRecord = null
+        whisperSttClient.release()
         try {
             projection.stop()
         } catch (_: Throwable) {}
@@ -167,6 +185,7 @@ class SystemAudioEngine(
             val chunkSeconds = when (sttBackend) {
                 SttBackend.LOCAL_VOSK -> LOCAL_CHUNK_SECONDS
                 SttBackend.LOCAL_SHERPA -> SHERPA_CHUNK_SECONDS
+                SttBackend.LOCAL_WHISPER -> WHISPER_CHUNK_SECONDS
                 SttBackend.REMOTE_WHISPER -> REMOTE_CHUNK_SECONDS
             }
             val chunkBytes = SAMPLE_RATE * 2 * chunkSeconds // 16-bit mono = 2 bytes/sample
@@ -235,6 +254,13 @@ class SystemAudioEngine(
                                 onFailure = { TranscribeOutcome("", "sherpa-onnx transcription failed: ${it.message ?: it::class.java.simpleName}") }
                             )
                     }
+                    SttBackend.LOCAL_WHISPER -> {
+                        runCatching { whisperSttClient.transcribe(pcmData) }
+                            .fold(
+                                onSuccess = { TranscribeOutcome(it) },
+                                onFailure = { TranscribeOutcome("", "Offline Whisper transcription failed: ${it.message ?: it::class.java.simpleName}") }
+                            )
+                    }
                 }
                 val err = outcome.errorMessage
                 if (err != null) {
@@ -267,6 +293,7 @@ class SystemAudioEngine(
         private const val REMOTE_CHUNK_SECONDS = 6
         private const val LOCAL_CHUNK_SECONDS = 2
         private const val SHERPA_CHUNK_SECONDS = 5
+        private const val WHISPER_CHUNK_SECONDS = 8
         private const val SILENCE_AVERAGE_ABS_THRESHOLD = 120
         private const val SILENT_CHUNKS_BEFORE_HINT = 2
         private const val NO_CAPTURABLE_AUDIO_MESSAGE =
