@@ -294,7 +294,7 @@ class SystemAudioEngine(
         private const val REMOTE_CHUNK_SECONDS = 6
         private const val LOCAL_CHUNK_SECONDS = 2
         private const val SHERPA_CHUNK_SECONDS = 5
-        private const val WHISPER_CHUNK_SECONDS = 8
+        private const val WHISPER_CHUNK_SECONDS = 6
         private const val SILENCE_AVERAGE_ABS_THRESHOLD = 120
         private const val SILENT_CHUNKS_BEFORE_HINT = 2
         private const val NO_CAPTURABLE_AUDIO_MESSAGE =
