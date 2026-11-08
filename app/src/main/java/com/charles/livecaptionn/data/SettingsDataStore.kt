@@ -43,6 +43,12 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
                     p[TRANSLATION_BACKEND] = TranslationBackend.PLAMO_OFFLINE.name
                     p[TRANSLATION_PROFILE_V4] = true
                 }
+                if (p[STT_PROFILE_V5] != true) {
+                    p[AUDIO_SOURCE] = AudioSource.SYSTEM.name
+                    p[STT_BACKEND] = SttBackend.LOCAL_WHISPER.name
+                    if (p[SOURCE] !in setOf("ja", "zh")) p[SOURCE] = "ja"
+                    p[STT_PROFILE_V5] = true
+                }
             }
         }
     }
@@ -97,7 +103,7 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
             overlayY = this[OVERLAY_Y] ?: 220,
             overlayMinimized = this[OVERLAY_MIN] ?: false,
             audioSource = AudioSource.fromName(this[AUDIO_SOURCE] ?: AudioSource.SYSTEM.name),
-            sttBackend = SttBackend.fromName(this[STT_BACKEND] ?: SttBackend.LOCAL_SHERPA.name),
+            sttBackend = SttBackend.fromName(this[STT_BACKEND] ?: SttBackend.LOCAL_WHISPER.name),
             translationBackend = TranslationBackend.fromName(this[TRANSLATION_BACKEND]),
             sttBaseUrl = this[STT_URL] ?: CaptionSettings.DEFAULT_STT_URL,
             overlayWidthDp = this[OVERLAY_W] ?: CaptionSettings.DEFAULT_OVERLAY_WIDTH_DP,
@@ -129,6 +135,7 @@ class SettingsDataStore(private val context: Context) : SettingsRepository {
         val TRANSLATION_PROFILE_V2 = booleanPreferencesKey("translation_profile_sensevoice_openai_novel_v2")
         val TRANSLATION_PROFILE_V3 = booleanPreferencesKey("translation_profile_plamo_offline_fallback_v3")
         val TRANSLATION_PROFILE_V4 = booleanPreferencesKey("translation_profile_plamo_offline_only_v4")
+        val STT_PROFILE_V5 = booleanPreferencesKey("stt_profile_offline_whisper_v5")
         val STT_URL = stringPreferencesKey("stt_url")
         val OVERLAY_W = intPreferencesKey("overlay_w")
         val OVERLAY_H = intPreferencesKey("overlay_h")
