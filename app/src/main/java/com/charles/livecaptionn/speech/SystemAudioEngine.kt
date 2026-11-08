@@ -22,8 +22,8 @@ import kotlin.math.abs
 
 /**
  * Captures system/internal audio via MediaProjection + AudioPlaybackCapture,
- * buffers a short PCM window, encodes to WAV, sends to a Whisper-compatible
- * STT endpoint, and delivers recognized text via callback.
+ * buffers short PCM windows, and routes them to the selected local or remote
+ * speech recognizer before delivering recognized text via callback.
  */
 class SystemAudioEngine(
     private val context: Context,
