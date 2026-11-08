@@ -45,8 +45,6 @@ class WhisperOfflineSttClient(private val context: Context) {
             val language = whisperLanguage(languageCode)
             if (recognizer != null && recognizerLanguage == language) return@withLock
 
-            recognizer?.release()
-            recognizer = null
             ensureModelsInstalled()
 
             val modelConfig = OfflineModelConfig(
@@ -61,21 +59,23 @@ class WhisperOfflineSttClient(private val context: Context) {
                 provider = "cpu",
                 modelType = "whisper"
             )
-            recognizer = OfflineRecognizer(
-                config = OfflineRecognizerConfig(
-                    featConfig = FeatureConfig(sampleRate = SAMPLE_RATE, featureDim = 80),
-                    modelConfig = modelConfig,
-                    decodingMethod = "greedy_search"
+            synchronized(recognizerLock) {
+                recognizer?.release()
+                recognizer = OfflineRecognizer(
+                    config = OfflineRecognizerConfig(
+                        featConfig = FeatureConfig(sampleRate = SAMPLE_RATE, featureDim = 80),
+                        modelConfig = modelConfig,
+                        decodingMethod = "greedy_search"
+                    )
                 )
-            )
-            recognizerLanguage = language
+                recognizerLanguage = language
+            }
             Log.i(TAG, "Offline Whisper ready for language=$language")
         }
     }
 
     /** Accepts signed 16-bit little-endian mono PCM at 16 kHz. */
     fun transcribe(pcm16: ByteArray): String {
-        val active = recognizer ?: error("Offline Whisper model is not initialized")
         val count = pcm16.size / 2
         if (count == 0) return ""
         val samples = FloatArray(count)
@@ -88,6 +88,7 @@ class WhisperOfflineSttClient(private val context: Context) {
         }
 
         synchronized(recognizerLock) {
+            val active = recognizer ?: error("Offline Whisper model is not initialized")
             val stream = active.createStream()
             return try {
                 stream.acceptWaveform(samples, SAMPLE_RATE)
